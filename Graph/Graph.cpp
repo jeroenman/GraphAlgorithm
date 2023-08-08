@@ -13,7 +13,7 @@ struct node
 
     void connectInOneDirectionTo(node* node)
     {
-        edges.push_back(node);
+        node->edges.push_back(this);
     }
 
     void connectInBothDirectionsTo(node* node)
