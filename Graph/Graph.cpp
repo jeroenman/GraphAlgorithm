@@ -1,4 +1,5 @@
-#include <iostream> 
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -6,13 +7,13 @@ const int SIZE = 5;
 
 struct node
 {
-    node* edges[SIZE] = {};
-    int size = 0;
+    vector<node*> edges;
+
+    int getEdgeCount() const { return edges.size(); }
 
     void connectInOneDirectionTo(node* node)
     {
-        edges[size] = node;
-        size++;
+        edges.push_back(node);
     }
 
     void connectInBothDirectionsTo(node* node)
@@ -44,9 +45,9 @@ int main()
     nodeF->connectInOneDirectionTo(nodeA);
     nodeF->connectInOneDirectionTo(nodeC);
 
-    cout << "\nNodeA eges: " << nodeA->size;
-    cout << "\nNodeB eges: " << nodeB->size;
-    cout << "\nNodeC eges: " << nodeC->size;
+    cout << "\nNodeA eges: " << nodeA->getEdgeCount();
+    cout << "\nNodeB eges: " << nodeB->getEdgeCount();
+    cout << "\nNodeC eges: " << nodeC->getEdgeCount();
 
     return 0;
 }
