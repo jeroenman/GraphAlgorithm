@@ -54,6 +54,15 @@ struct Node
         connectTo(node, EdgeType::Bidirectional);
         node->connectTo(this, EdgeType::Bidirectional);
     }
+
+    void clean()
+    {
+        for (Edge* edge : edges)
+        {
+            delete edge;
+        }
+        edges.clear();
+    }
 };
 
 struct StringEntry
@@ -76,7 +85,7 @@ void spliceVectorAtIndex(std::vector<T>& vec, int index)
     vec.erase(vec.begin() + index);
 }
 
-void removeWithEdgeCount(vector<Node*>& nodes, int edgeCount)
+void removeNodesWithEdgeCount(vector<Node*>& nodes, int edgeCount)
 {
     int arrSize = static_cast<int>(nodes.size());
 
@@ -198,10 +207,10 @@ int main()
         cout << "\nNode" + node->label + " edges: " << node->getEdgeCount();
     }
 
-    removeWithEdgeCount(nodes, 3); // MODIFIES VECTOR
+    removeNodesWithEdgeCount(nodes, 3); // MODIFIES VECTOR
 
     // TODO? COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
-    //
+    
     // PRINT RESULT
     for (int i = 0; i < nodes.size(); i++)
     {
@@ -223,6 +232,20 @@ int main()
             }
         }
     }
+
+    // CLEANUP
+    for (StringEntry* entry : stringEntries)
+    {
+        delete entry;
+    }
+    stringEntries.clear();
+
+    for (Node* node : nodes)
+    {
+        node->clean();
+        delete node;
+    }
+    nodes.clear();
 
     return 0;
 }
