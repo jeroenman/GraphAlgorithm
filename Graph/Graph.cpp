@@ -4,56 +4,81 @@
 
 using namespace std;
 
-const int SIZE = 5;
+enum EdgeType { Directional, Bidirectional };
 
-struct node
+struct Node;
+
+struct Edge
 {
-    node(string _tag) {
-        tag = _tag;
+    Edge(Node* _nodeConnection, int _nodeConnectionIndex, EdgeType _edgeType)
+    {
+        nodeConnection = _nodeConnection;
+        nodeConnectionIndex = _nodeConnectionIndex;
+        edgeType = _edgeType;
     }
 
-    string tag = "";
+    Node* nodeConnection = nullptr;
+    int nodeConnectionIndex = -1;
+    EdgeType edgeType;
+};
 
-    vector<node*> edges;
+struct Node
+{
+    Node(string _label)
+    {
+        label = _label;
+    }
+
+    string label = "";
+
+    vector<Edge*> edges;
 
     int getEdgeCount() const { return edges.size(); }
 
-    void connectInOneDirectionTo(node* node)
+    void connectTo(Node* node, EdgeType edgeType = EdgeType::Directional)
     {
-        node->edges.push_back(this);
+        Edge* edge = new Edge(this, node->getEdgeCount(), edgeType);
+        node->edges.push_back(edge);
     }
 
-    void connectInBothDirectionsTo(node* node)
+    void connectInOneDirectionTo(Node* node)
     {
-        connectInOneDirectionTo(node);
-        node->connectInOneDirectionTo(this);
+        connectTo(node, EdgeType::Directional);
+    }
+
+    void connectInBothDirectionsTo(Node* node)
+    {
+        connectTo(node, EdgeType::Bidirectional);
+        node->connectTo(this, EdgeType::Bidirectional);
     }
 };
 
-void removeWithEdgeCount(vector<node*>& nodes, int edgeCount)
+template <typename T>
+void spliceVectorAtIndex(std::vector<T>& vec, int index)
+{
+    vec.erase(vec.begin() + index);
+}
+
+void removeWithEdgeCount(vector<Node*>& nodes, int edgeCount)
 {
     int arrSize = nodes.size();
 
     for (int i = arrSize - 1; i >= 0; i--)
     {
-        node* currentNode = nodes[i];
+        Node* node = nodes[i];
 
         // FIND NODE THAT MATCHES EDGE COUNT TARGET
-        int edgeCountMatchingNode = currentNode->getEdgeCount();
+        int edgeCountMatchingNode = node->getEdgeCount();
         if (edgeCountMatchingNode == edgeCount)
         {
             // LOOP THROUGH ALL OF NODE'S EDGES AND REMOVE EDGE IF IT IS NODE
             for (int j = edgeCountMatchingNode - 1; j >= 0; j--)
             {
-                node* edge = currentNode->edges[j];
-                int edgeCountCheck = edge->getEdgeCount();
-                for (int k = edgeCountCheck - 1; k >= 0; k--)
+                Edge* edge = node->edges[j];
+                if (edge->edgeType == EdgeType::Bidirectional)
                 {
-                    node* edge2 = edge->edges[k];
-                    if (edge2 == currentNode)
-                    {
-                        edge->edges.erase(edge->edges.begin() + k);
-                    }
+                    Node* nodeConnection = edge->nodeConnection;
+                    spliceVectorAtIndex(nodeConnection->edges, edge->nodeConnectionIndex);
                 }
             }
 
@@ -64,13 +89,13 @@ void removeWithEdgeCount(vector<node*>& nodes, int edgeCount)
 
 int main()
 {
-    node* nodeA = new node("A");
-    node* nodeB = new node("B");
-    node* nodeC = new node("C");
-    node* nodeD = new node("D");
-    node* nodeE = new node("E");
-    node* nodeF = new node("F");
-    node* nodeG = new node("G");
+    Node* nodeA = new Node("A");
+    Node* nodeB = new Node("B");
+    Node* nodeC = new Node("C");
+    Node* nodeD = new Node("D");
+    Node* nodeE = new Node("E");
+    Node* nodeF = new Node("F");
+    Node* nodeG = new Node("G");
 
     nodeA->connectInBothDirectionsTo(nodeB);
     nodeB->connectInOneDirectionTo(nodeC);
@@ -84,20 +109,22 @@ int main()
     nodeF->connectInOneDirectionTo(nodeA);
     nodeF->connectInOneDirectionTo(nodeC);
 
-    vector<node*> allEdges = { nodeA, nodeB, nodeC, nodeD, nodeE, nodeF, nodeG };
+    vector<Node*> allEdges = { nodeA, nodeB, nodeC, nodeD, nodeE, nodeF, nodeG };
 
     for (int i = 0; i < allEdges.size(); i++)
     {
-        node* node = allEdges[i];
-        cout << "\nNode" + node->tag + " edges: " << node->getEdgeCount();
+        Node* node = allEdges[i];
+        cout << "\nNode" + node->label + " edges: " << node->getEdgeCount();
     }
 
     removeWithEdgeCount(allEdges, 3); // MODIFIES VECTOR
+    
+    // COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
 
     for (int i = 0; i < allEdges.size(); i++)
     {
-        node* node = allEdges[i];
-        cout << "\nNew Node" + node->tag + " edges: " << node->getEdgeCount();
+        Node* node = allEdges[i];
+        cout << "\nNew Node" + node->label + " edges: " << node->getEdgeCount();
     }
 
     return 0;
