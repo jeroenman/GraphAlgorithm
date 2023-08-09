@@ -97,12 +97,13 @@ void removeNodesWithEdgeCount(vector<Node*>& nodes, int edgeCount)
         int edgeCountMatchingNode = node->getEdgeCount();
         if (edgeCountMatchingNode == edgeCount)
         {
-            // LOOP THROUGH ALL OF NODE'S EDGES AND REMOVE EDGE IF IT IS NODE
+            // LOOP THROUGH ALL OF NODE'S EDGES
             for (int j = edgeCountMatchingNode - 1; j >= 0; j--)
             {
                 Edge* edge = node->edges[j];
                 if (edge->edgeType == EdgeType::Bidirectional)
                 {
+                    // IF NODE IS BIDIRECTIONAL CONNECTED TO ANOTHER, REMOVE EDGE FROM OTHER THAT POINTS TO NODE
                     Node* nodeConnection = edge->nodeConnection;
                     spliceVectorAtIndex(nodeConnection->edges, edge->nodeConnectionIndex);
                 }
@@ -200,30 +201,24 @@ int main()
     vector<StringEntry*> stringEntries = getStringEntriesFromTxt("Graph.txt");
     vector<Node*> nodes = getNodesFromStringEntries(stringEntries);
 
-    // PRINT ORIGINAL RELATIONS
-    for (int i = 0; i < nodes.size(); i++)
-    {
-        Node* node = nodes[i];
-        cout << "\nNode" + node->label + " edges: " << node->getEdgeCount();
-    }
-
     removeNodesWithEdgeCount(nodes, 3); // MODIFIES VECTOR
 
     // TODO? COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
     
     // PRINT RESULT
-    for (int i = 0; i < nodes.size(); i++)
+    int nodesLength = static_cast<int>(nodes.size());
+    for (int i = 0; i < nodesLength; i++)
     {
         Node* node = nodes[i];
 
         vector<Edge*> edges = node->edges;
-        int n = static_cast<int>(edges.size());
-        for (int j = 0; j < n; j++)
+        int edgesLength = static_cast<int>(edges.size());
+        for (int j = 0; j < edgesLength; j++)
         {
             Edge* otherEdge = edges[j];
             Node* otherNode = otherEdge->nodeConnection;
             string dirString = getDirectionStringFromEdgeType(otherEdge->edgeType);
-            cout << "\n" + otherNode->label + dirString + node->label;
+            cout <<otherNode->label + dirString + node->label + "\n";
 
             if (otherEdge->edgeType == EdgeType::Bidirectional)
             {
