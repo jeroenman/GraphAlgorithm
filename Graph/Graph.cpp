@@ -91,7 +91,7 @@ string getDirectionStringFromEdgeType(EdgeType edgeType)
     switch (edgeType)
     {
         case Directional:
-            return "<-";
+            return "->";
         case Bidirectional:
             return "<>";
     }
@@ -144,7 +144,7 @@ int main()
             Edge* otherEdge = edges[j];
             Node* otherNode = otherEdge->nodeConnection;
             string dirString = getDirectionStringFromEdgeType(otherEdge->edgeType);
-            cout << "\n" + node->label + dirString + otherNode->label;
+            cout << "\n" + otherNode->label + dirString + node->label;
 
             if (otherEdge->edgeType == EdgeType::Bidirectional)
             {
