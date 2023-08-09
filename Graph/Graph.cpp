@@ -86,6 +86,18 @@ void removeWithEdgeCount(vector<Node*>& nodes, int edgeCount)
         }
     }
 }
+string getDirectionStringFromEdgeType(EdgeType edgeType)
+{
+    switch (edgeType)
+    {
+        case Directional:
+            return "<-";
+        case Bidirectional:
+            return "<>";
+    }
+
+   return "";
+}
 
 int main()
 {
@@ -124,7 +136,23 @@ int main()
     for (int i = 0; i < allEdges.size(); i++)
     {
         Node* node = allEdges[i];
-        cout << "\nNew Node" + node->label + " edges: " << node->getEdgeCount();
+
+        vector<Edge*> edges = node->edges;
+        int n = edges.size();
+        for (int j = 0; j < n; j++)
+        {
+            Edge* otherEdge = edges[j];
+            Node* otherNode = otherEdge->nodeConnection;
+            string dirString = getDirectionStringFromEdgeType(otherEdge->edgeType);
+            cout << "\n" + node->label + dirString + otherNode->label;
+
+            if (otherEdge->edgeType == EdgeType::Bidirectional)
+            {
+                // REMOVE OTHER BIDIRECTIONAL EDGE, SO WE DON'T PRINT IT A SECOND TIME
+				spliceVectorAtIndex(otherNode->edges, otherEdge->nodeConnectionIndex);
+			}
+        }
+
     }
 
     return 0;
