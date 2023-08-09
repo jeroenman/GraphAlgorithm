@@ -30,42 +30,13 @@ struct node
     }
 };
 
-vector<node*> deepCopyNodes(const vector<node*>& nodes)
+void removeWithEdgeCount(vector<node*>& nodes, int edgeCount)
 {
-    vector<node*> newNodes;
-    unordered_map<node*, node*> oldToNew;
-
-    for (node* oldNode : nodes)
-    {
-        node* newNode = new node(oldNode->tag);
-        newNodes.push_back(newNode);
-        oldToNew[oldNode] = newNode;
-    }
-
-    for (size_t i = 0; i < nodes.size(); ++i)
-    {
-        for (node* oldEdge : nodes[i]->edges)
-        {
-            if (oldToNew.count(oldEdge))
-            {
-                newNodes[i]->edges.push_back(oldToNew[oldEdge]);
-            }
-        }
-    }
-
-    return newNodes;
-}
-
-vector<node*> removeWithEdgeCount(const vector<node*>& nodes, int edgeCount)
-{
-    //vector<node*> newNodes = nodes;
-    vector<node*> newNodes = deepCopyNodes(nodes);
-
-    int arrSize = newNodes.size();
+    int arrSize = nodes.size();
 
     for (int i = arrSize - 1; i >= 0; i--)
     {
-        node* currentNode = newNodes[i];
+        node* currentNode = nodes[i];
 
         // FIND NODE THAT MATCHES EDGE COUNT TARGET
         int edgeCountMatchingNode = currentNode->getEdgeCount();
@@ -86,11 +57,9 @@ vector<node*> removeWithEdgeCount(const vector<node*>& nodes, int edgeCount)
                 }
             }
 
-            newNodes.erase(newNodes.begin() + i);
+            nodes.erase(nodes.begin() + i);
         }
     }
-
-    return newNodes;
 }
 
 int main()
@@ -117,17 +86,17 @@ int main()
 
     vector<node*> allEdges = { nodeA, nodeB, nodeC, nodeD, nodeE, nodeF, nodeG };
 
-    vector<node*> newEdges = removeWithEdgeCount(allEdges, 3);
-
     for (int i = 0; i < allEdges.size(); i++)
     {
         node* node = allEdges[i];
         cout << "\nNode" + node->tag + " edges: " << node->getEdgeCount();
     }
 
-    for (int i = 0; i < newEdges.size(); i++)
+    removeWithEdgeCount(allEdges, 3); // MODIFIES VECTOR
+
+    for (int i = 0; i < allEdges.size(); i++)
     {
-        node* node = newEdges[i];
+        node* node = allEdges[i];
         cout << "\nNew Node" + node->tag + " edges: " << node->getEdgeCount();
     }
 
