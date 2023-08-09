@@ -129,6 +129,7 @@ string getDirectionStringFromEdgeType(EdgeType edgeType)
 vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
 {
     vector<StringEntry*> stringEntries;
+    stringEntries.reserve(10);
 
     string s;
     ifstream in;
@@ -157,6 +158,8 @@ vector<Node*> getNodesFromStringEntries(vector<StringEntry*> stringEntries)
 {
     vector<Node*> nodes;
     std::map<std::string, Node*> madeNodesMap;
+
+    nodes.reserve(26);
 
     for (StringEntry* entry : stringEntries)
     {
@@ -203,7 +206,7 @@ int main()
 
     removeNodesWithEdgeCount(nodes, 3); // MODIFIES VECTOR
 
-    // TODO? COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
+    // TODO? COULD KEEP CHECKING IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
     
     // PRINT RESULT
     int nodesLength = static_cast<int>(nodes.size());
