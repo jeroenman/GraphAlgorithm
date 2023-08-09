@@ -1,6 +1,7 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <vector>
-#include <unordered_map>
 
 using namespace std;
 
@@ -27,6 +28,7 @@ struct Node
     Node(string _label)
     {
         label = _label;
+        edges.reserve(3);
     }
 
     string label = "";
@@ -99,8 +101,50 @@ string getDirectionStringFromEdgeType(EdgeType edgeType)
    return "";
 }
 
+struct StringEntry
+{
+    StringEntry(string _node1, string _direction, string _node2)
+    {
+        node1 = _node1;
+        direction = _direction;
+        node2 = _node2;
+    }
+
+    string node1;
+    string node2;
+    string direction;
+};
+
+vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
+{
+    vector<StringEntry*> stringEntries;
+
+    string s;
+    ifstream in;
+
+    in.open("Graph.txt");
+
+    if (!in.is_open())
+    {
+        std::cerr << "Could not open Graph.txt" << std::endl;
+        return stringEntries;  // or handle error as appropriate
+    }
+
+    while (!in.eof())
+    {
+        getline(in, s);
+
+        StringEntry* stringEntry = new StringEntry(s.substr(0, 1), s.substr(1, 2), s.substr(3, 1));
+        stringEntries.push_back(stringEntry);
+    }
+
+    return stringEntries;
+}
+
 int main()
 {
+    vector<StringEntry*> stringEntries = getStringEntriesFromTxt("Graph.txt");
+
     Node* nodeA = new Node("A");
     Node* nodeB = new Node("B");
     Node* nodeC = new Node("C");
@@ -121,21 +165,21 @@ int main()
     nodeF->connectInOneDirectionTo(nodeA);
     nodeF->connectInOneDirectionTo(nodeC);
 
-    vector<Node*> allEdges = { nodeA, nodeB, nodeC, nodeD, nodeE, nodeF, nodeG };
+    vector<Node*> allNodes = { nodeA, nodeB, nodeC, nodeD, nodeE, nodeF, nodeG };
 
-    for (int i = 0; i < allEdges.size(); i++)
+    for (int i = 0; i < allNodes.size(); i++)
     {
-        Node* node = allEdges[i];
+        Node* node = allNodes[i];
         cout << "\nNode" + node->label + " edges: " << node->getEdgeCount();
     }
 
-    removeWithEdgeCount(allEdges, 3); // MODIFIES VECTOR
-    
+    removeWithEdgeCount(allNodes, 3); // MODIFIES VECTOR
+
     // COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
 
-    for (int i = 0; i < allEdges.size(); i++)
+    for (int i = 0; i < allNodes.size(); i++)
     {
-        Node* node = allEdges[i];
+        Node* node = allNodes[i];
 
         vector<Edge*> edges = node->edges;
         int n = edges.size();
@@ -149,10 +193,9 @@ int main()
             if (otherEdge->edgeType == EdgeType::Bidirectional)
             {
                 // REMOVE OTHER BIDIRECTIONAL EDGE, SO WE DON'T PRINT IT A SECOND TIME
-				spliceVectorAtIndex(otherNode->edges, otherEdge->nodeConnectionIndex);
-			}
+                spliceVectorAtIndex(otherNode->edges, otherEdge->nodeConnectionIndex);
+            }
         }
-
     }
 
     return 0;

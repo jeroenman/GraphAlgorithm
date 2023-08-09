@@ -1,0 +1,11 @@
+A<>B
+B->C
+E->A
+E<-B
+D->E
+G->E
+D<>G
+F->G
+D<-F
+F->A
+F->C
