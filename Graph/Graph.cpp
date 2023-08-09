@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -35,7 +36,7 @@ struct Node
 
     vector<Edge*> edges;
 
-    int getEdgeCount() const { return edges.size(); }
+    int getEdgeCount() const { return static_cast<int>(edges.size()); }
 
     void connectTo(Node* node, EdgeType edgeType = EdgeType::Directional)
     {
@@ -55,6 +56,20 @@ struct Node
     }
 };
 
+struct StringEntry
+{
+    StringEntry(string _node1Label, string _direction, string _node2Label)
+    {
+        node1Label = _node1Label;
+        direction = _direction;
+        node2Label = _node2Label;
+    }
+
+    string node1Label;
+    string node2Label;
+    string direction;
+};
+
 template <typename T>
 void spliceVectorAtIndex(std::vector<T>& vec, int index)
 {
@@ -63,7 +78,7 @@ void spliceVectorAtIndex(std::vector<T>& vec, int index)
 
 void removeWithEdgeCount(vector<Node*>& nodes, int edgeCount)
 {
-    int arrSize = nodes.size();
+    int arrSize = static_cast<int>(nodes.size());
 
     for (int i = arrSize - 1; i >= 0; i--)
     {
@@ -101,20 +116,6 @@ string getDirectionStringFromEdgeType(EdgeType edgeType)
    return "";
 }
 
-struct StringEntry
-{
-    StringEntry(string _node1, string _direction, string _node2)
-    {
-        node1 = _node1;
-        direction = _direction;
-        node2 = _node2;
-    }
-
-    string node1;
-    string node2;
-    string direction;
-};
-
 vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
 {
     vector<StringEntry*> stringEntries;
@@ -127,9 +128,10 @@ vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
     if (!in.is_open())
     {
         std::cerr << "Could not open Graph.txt" << std::endl;
-        return stringEntries;  // or handle error as appropriate
+        return stringEntries;
     }
 
+    // CREATE A StringEntry FOR EACH LINE / RELATIONSHIP
     while (!in.eof())
     {
         getline(in, s);
@@ -141,48 +143,72 @@ vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
     return stringEntries;
 }
 
+vector<Node*> getNodesFromStringEntries(vector<StringEntry*> stringEntries)
+{
+    vector<Node*> nodes;
+    std::map<std::string, Node*> madeNodesMap;
+
+    for (StringEntry* entry : stringEntries)
+    {
+        // CREATE NEW NODES IF THEY DON'T EXIST YET
+        if (!madeNodesMap[entry->node1Label])
+        {
+            Node* node = madeNodesMap[entry->node1Label] = new Node(entry->node1Label);
+            nodes.push_back(node);
+        }
+        if (!madeNodesMap[entry->node2Label])
+        {
+            Node* node = madeNodesMap[entry->node2Label] = new Node(entry->node2Label);
+            nodes.push_back(node);
+        }
+
+        // GET NODES BASED ON LABEL
+        Node* node1 = madeNodesMap[entry->node1Label];
+        Node* node2 = madeNodesMap[entry->node2Label];
+
+        // CONNECT THEM UP BASED ON DIRECTION
+        if (entry->direction == "->")
+        {
+			node1->connectInOneDirectionTo(node2);
+		}
+        else
+        if (entry->direction == "<-")
+        {
+            node2->connectInOneDirectionTo(node1);
+        }
+        else
+        if (entry->direction == "<>")
+        {
+			node1->connectInBothDirectionsTo(node2);
+		}
+    }
+
+    return nodes;
+}
+
 int main()
 {
     vector<StringEntry*> stringEntries = getStringEntriesFromTxt("Graph.txt");
+    vector<Node*> nodes = getNodesFromStringEntries(stringEntries);
 
-    Node* nodeA = new Node("A");
-    Node* nodeB = new Node("B");
-    Node* nodeC = new Node("C");
-    Node* nodeD = new Node("D");
-    Node* nodeE = new Node("E");
-    Node* nodeF = new Node("F");
-    Node* nodeG = new Node("G");
-
-    nodeA->connectInBothDirectionsTo(nodeB);
-    nodeB->connectInOneDirectionTo(nodeC);
-    nodeE->connectInOneDirectionTo(nodeA);
-    nodeB->connectInOneDirectionTo(nodeE);
-    nodeD->connectInOneDirectionTo(nodeE);
-    nodeG->connectInOneDirectionTo(nodeE);
-    nodeD->connectInBothDirectionsTo(nodeG);
-    nodeF->connectInOneDirectionTo(nodeG);
-    nodeF->connectInOneDirectionTo(nodeD);
-    nodeF->connectInOneDirectionTo(nodeA);
-    nodeF->connectInOneDirectionTo(nodeC);
-
-    vector<Node*> allNodes = { nodeA, nodeB, nodeC, nodeD, nodeE, nodeF, nodeG };
-
-    for (int i = 0; i < allNodes.size(); i++)
+    // PRINT ORIGINAL RELATIONS
+    for (int i = 0; i < nodes.size(); i++)
     {
-        Node* node = allNodes[i];
+        Node* node = nodes[i];
         cout << "\nNode" + node->label + " edges: " << node->getEdgeCount();
     }
 
-    removeWithEdgeCount(allNodes, 3); // MODIFIES VECTOR
+    removeWithEdgeCount(nodes, 3); // MODIFIES VECTOR
 
-    // COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
-
-    for (int i = 0; i < allNodes.size(); i++)
+    // TODO? COULD CHECK AGAIN IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
+    //
+    // PRINT RESULT
+    for (int i = 0; i < nodes.size(); i++)
     {
-        Node* node = allNodes[i];
+        Node* node = nodes[i];
 
         vector<Edge*> edges = node->edges;
-        int n = edges.size();
+        int n = static_cast<int>(edges.size());
         for (int j = 0; j < n; j++)
         {
             Edge* otherEdge = edges[j];
