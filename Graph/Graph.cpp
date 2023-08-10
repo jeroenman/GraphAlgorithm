@@ -87,9 +87,9 @@ void spliceVectorAtIndex(std::vector<T>& vector, int index)
 
 void removeNodesWithEdgeCount(vector<Node*>& nodes, int edgeCount)
 {
-    int arrLength = static_cast<int>(nodes.size());
+    int nodesLength = static_cast<int>(nodes.size());
 
-    for (int i = arrLength - 1; i >= 0; i--)
+    for (int i = nodesLength - 1; i >= 0; i--)
     {
         Node* node = nodes[i];
 
@@ -201,37 +201,58 @@ vector<Node*> createNodesFromNodeRelationships(vector<NodeRelationship*> nodeRel
     return nodes;
 }
 
-int main()
+string getStringOfNodeRelationships(vector<Node*> nodes)
 {
-    vector<NodeRelationship*> nodeRelationships = createNodeRelationships("Graph.txt");
-    vector<Node*> nodes = createNodesFromNodeRelationships(nodeRelationships);
+    string result = "";
+    std::map<string, bool> nodeRelationshipsToIgnoreMap;
 
-    removeNodesWithEdgeCount(nodes, 3); // MODIFIES VECTOR
-
-    // TODO? COULD KEEP CHECKING IF THERE ARE NO NODES WITH 3 EDGES, BUT NOT NECESSARY FOR THIS DATA
-    
-    // PRINT RESULT
     int nodesLength = static_cast<int>(nodes.size());
+
     for (int i = 0; i < nodesLength; i++)
     {
         Node* node = nodes[i];
-
         vector<Edge*> edges = node->edges;
         int edgesLength = static_cast<int>(edges.size());
+
         for (int j = 0; j < edgesLength; j++)
         {
             Edge* otherEdge = edges[j];
             Node* otherNode = otherEdge->nodeConnection;
             string dirString = getDirectionStringFromEdgeType(otherEdge->edgeType);
-            cout <<otherNode->label + dirString + node->label + "\n";
+            string nodeRelationshipStr = (otherNode->label + dirString + node->label);
+
+            if (nodeRelationshipsToIgnoreMap[nodeRelationshipStr])
+            {
+                // ALREADY ADDED 
+				continue;
+			}
+
+            result += nodeRelationshipStr + "\n";
 
             if (otherEdge->edgeType == EdgeType::Bidirectional)
             {
-                // REMOVE OTHER BIDIRECTIONAL EDGE, SO WE DON'T PRINT IT A SECOND TIME
-                spliceVectorAtIndex(otherNode->edges, otherEdge->nodeConnectionIndex);
+                // STORE WHICH BIDIRECTIONAL CONNECTIONS TO IGNORE, SINCE WE JUST ADDED ONE
+                string nodeRelationshipStrInv = (node->label + dirString + otherNode->label);
+                nodeRelationshipsToIgnoreMap[nodeRelationshipStrInv] = true;
             }
         }
     }
+
+    return result;
+}
+
+int main()
+{
+    // CREATE NODES
+    vector<NodeRelationship*> nodeRelationships = createNodeRelationships("Graph.txt");
+    vector<Node*> nodes = createNodesFromNodeRelationships(nodeRelationships);
+    
+    // RUN ALGORITHM
+    removeNodesWithEdgeCount(nodes, 3); // MODIFIES VECTOR
+
+    // PRINT RESULT
+    string nodeRelationshipStr = getStringOfNodeRelationships(nodes);
+    cout << nodeRelationshipStr;
 
     // CLEANUP
     for (NodeRelationship* nodeRelationships : nodeRelationships)
