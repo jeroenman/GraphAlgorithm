@@ -65,9 +65,9 @@ struct Node
     }
 };
 
-struct StringEntry
+struct NodeRelationship
 {
-    StringEntry(string _node1Label, string _direction, string _node2Label)
+    NodeRelationship(string _node1Label, string _direction, string _node2Label)
     {
         node1Label = _node1Label;
         direction = _direction;
@@ -80,16 +80,16 @@ struct StringEntry
 };
 
 template <typename T>
-void spliceVectorAtIndex(std::vector<T>& vec, int index)
+void spliceVectorAtIndex(std::vector<T>& vector, int index)
 {
-    vec.erase(vec.begin() + index);
+    vector.erase(vector.begin() + index);
 }
 
 void removeNodesWithEdgeCount(vector<Node*>& nodes, int edgeCount)
 {
-    int arrSize = static_cast<int>(nodes.size());
+    int arrLength = static_cast<int>(nodes.size());
 
-    for (int i = arrSize - 1; i >= 0; i--)
+    for (int i = arrLength - 1; i >= 0; i--)
     {
         Node* node = nodes[i];
 
@@ -109,7 +109,9 @@ void removeNodesWithEdgeCount(vector<Node*>& nodes, int edgeCount)
                 }
             }
 
-            nodes.erase(nodes.begin() + i);
+            // REMOVE NODE
+            node->clean();
+            spliceVectorAtIndex(nodes, i);
         }
     }
 }
@@ -126,9 +128,9 @@ string getDirectionStringFromEdgeType(EdgeType edgeType)
    return "";
 }
 
-vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
+vector<NodeRelationship*> createNodeRelationships(string txtPath)
 {
-    vector<StringEntry*> stringEntries;
+    vector<NodeRelationship*> stringEntries;
     stringEntries.reserve(10);
 
     string s;
@@ -147,50 +149,50 @@ vector<StringEntry*> getStringEntriesFromTxt(string txtPath)
     {
         getline(in, s);
 
-        StringEntry* stringEntry = new StringEntry(s.substr(0, 1), s.substr(1, 2), s.substr(3, 1));
-        stringEntries.push_back(stringEntry);
+        NodeRelationship* nodesRelationship = new NodeRelationship(s.substr(0, 1), s.substr(1, 2), s.substr(3, 1));
+        stringEntries.push_back(nodesRelationship);
     }
 
     return stringEntries;
 }
 
-vector<Node*> getNodesFromStringEntries(vector<StringEntry*> stringEntries)
+vector<Node*> createNodesFromNodeRelationships(vector<NodeRelationship*> nodeRelationships)
 {
     vector<Node*> nodes;
     std::map<std::string, Node*> madeNodesMap;
 
     nodes.reserve(26);
 
-    for (StringEntry* entry : stringEntries)
+    for (NodeRelationship* nodeRelationship : nodeRelationships)
     {
         // CREATE NEW NODES IF THEY DON'T EXIST YET
-        if (!madeNodesMap[entry->node1Label])
+        if (!madeNodesMap[nodeRelationship->node1Label])
         {
-            Node* node = madeNodesMap[entry->node1Label] = new Node(entry->node1Label);
+            Node* node = madeNodesMap[nodeRelationship->node1Label] = new Node(nodeRelationship->node1Label);
             nodes.push_back(node);
         }
-        if (!madeNodesMap[entry->node2Label])
+        if (!madeNodesMap[nodeRelationship->node2Label])
         {
-            Node* node = madeNodesMap[entry->node2Label] = new Node(entry->node2Label);
+            Node* node = madeNodesMap[nodeRelationship->node2Label] = new Node(nodeRelationship->node2Label);
             nodes.push_back(node);
         }
 
         // GET NODES BASED ON LABEL
-        Node* node1 = madeNodesMap[entry->node1Label];
-        Node* node2 = madeNodesMap[entry->node2Label];
+        Node* node1 = madeNodesMap[nodeRelationship->node1Label];
+        Node* node2 = madeNodesMap[nodeRelationship->node2Label];
 
         // CONNECT THEM UP BASED ON DIRECTION
-        if (entry->direction == "->")
+        if (nodeRelationship->direction == "->")
         {
 			node1->connectInOneDirectionTo(node2);
 		}
         else
-        if (entry->direction == "<-")
+        if (nodeRelationship->direction == "<-")
         {
             node2->connectInOneDirectionTo(node1);
         }
         else
-        if (entry->direction == "<>")
+        if (nodeRelationship->direction == "<>")
         {
 			node1->connectInBothDirectionsTo(node2);
 		}
@@ -201,8 +203,8 @@ vector<Node*> getNodesFromStringEntries(vector<StringEntry*> stringEntries)
 
 int main()
 {
-    vector<StringEntry*> stringEntries = getStringEntriesFromTxt("Graph.txt");
-    vector<Node*> nodes = getNodesFromStringEntries(stringEntries);
+    vector<NodeRelationship*> nodeRelationships = createNodeRelationships("Graph.txt");
+    vector<Node*> nodes = createNodesFromNodeRelationships(nodeRelationships);
 
     removeNodesWithEdgeCount(nodes, 3); // MODIFIES VECTOR
 
@@ -232,11 +234,11 @@ int main()
     }
 
     // CLEANUP
-    for (StringEntry* entry : stringEntries)
+    for (NodeRelationship* nodeRelationships : nodeRelationships)
     {
-        delete entry;
+        delete nodeRelationships;
     }
-    stringEntries.clear();
+    nodeRelationships.clear();
 
     for (Node* node : nodes)
     {
