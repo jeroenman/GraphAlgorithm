@@ -30,16 +30,14 @@ struct Node;
 
 struct Edge
 {
-    Edge(Node* _nodeConnection, int _nodeConnectionIndex, EdgeType _edgeType)
+    Edge(Node* _nodeFrom, EdgeType _edgeType = Directional)
     {
-        nodeConnection = _nodeConnection;
-        nodeConnectionIndex = _nodeConnectionIndex;
+        nodeFrom = _nodeFrom;
         edgeType = _edgeType;
     }
 
-    Node* nodeConnection = nullptr;
-    int nodeConnectionIndex = -1;
-    EdgeType edgeType;
+    Node* nodeFrom = nullptr;
+    EdgeType edgeType = Directional;
 };
 
 struct Node
@@ -56,9 +54,9 @@ struct Node
 
     int getEdgeCount() const { return static_cast<int>(edges.size()); }
 
-    void receiveEdgeFrom(Node* node, EdgeType edgeType = Directional)
+    void addEdgeFrom(Node* node, EdgeType edgeType = Directional)
     {
-        Edge* edge = new Edge(node, getEdgeCount(), edgeType);
+        Edge* edge = new Edge(node, edgeType);
         edges.push_back(edge);
     }
 
@@ -92,8 +90,10 @@ class NodesManager
     private:
         vector<NodeRelationship*> createNodeRelationships(string txtPath);
         void setupNodes(vector<NodeRelationship*> nodeRelationships);
+        void connectBidirectionalEdgeToNodes(Node* node1, Node* node2);
         Node* addNode(string label = "");
         void removeNode(Node* node, int index);
+        vector <Node*> getNodesWithEdgeCount(int edgeCount);
         string getStringOfNodeRelationships();
         string getDirectionStringFromEdgeType(EdgeType edgeType);
 

@@ -66,23 +66,29 @@ void NodesManager::setupNodes(vector<NodeRelationship*> nodeRelationships)
         Node* node1 = madeNodesMap[nodeRelationship->node1Label];
         Node* node2 = madeNodesMap[nodeRelationship->node2Label];
 
-        // CONNECT THEM UP BASED ON DIRECTION
+        // CONNECT THEM UP BASED ON DIRECTION - FOR THIS PROGRAM WE ONLY CARE ABOUT THE INCOMING EDGES FOR EACH NODE
         if (nodeRelationship->direction == "->")
         {
-            node2->receiveEdgeFrom(node1);
+            node2->addEdgeFrom(node1);
         }
         else
         if (nodeRelationship->direction == "<-")
         {
-            node1->receiveEdgeFrom(node2);
+            node1->addEdgeFrom(node2);
         }
         else
         if (nodeRelationship->direction == "<>")
         {
-            node2->receiveEdgeFrom(node1, Bidirectional);
-            node1->receiveEdgeFrom(node2, Bidirectional);
+            connectBidirectionalEdgeToNodes(node1, node2);
         }
     }
+}
+
+void NodesManager::connectBidirectionalEdgeToNodes(Node* node1, Node* node2)
+{
+    // THESE ALWAYS HAVE TO GO TOGETHER FOR BIDIRECTIONAL
+    node1->addEdgeFrom(node2, Bidirectional);
+    node2->addEdgeFrom(node1, Bidirectional);
 }
 
 Node* NodesManager::addNode(string label)
@@ -99,10 +105,11 @@ void NodesManager::removeNode(Node* node, int index)
     spliceVectorAtIndex(nodes, index);
 }
 
-void NodesManager::removeNodesWithEdgeCount(int edgeCount)
+vector <Node*> NodesManager::getNodesWithEdgeCount(int edgeCount)
 {
-    int nodesLength = static_cast<int>(nodes.size());
+    vector <Node*> matchingNodes;
 
+    int nodesLength = static_cast<int>(nodes.size());
     for (int i = nodesLength - 1; i >= 0; i--)
     {
         Node* node = nodes[i];
@@ -111,20 +118,45 @@ void NodesManager::removeNodesWithEdgeCount(int edgeCount)
         int edgeCountMatchingNode = node->getEdgeCount();
         if (edgeCountMatchingNode == edgeCount)
         {
-            // LOOP THROUGH ALL OF NODE'S EDGES
-            for (int j = edgeCountMatchingNode - 1; j >= 0; j--)
+            matchingNodes.push_back(node);
+        }
+    }
+
+    return matchingNodes;
+}
+
+void NodesManager::removeNodesWithEdgeCount(int edgeCount)
+{
+    vector <Node*> matchingNodes = getNodesWithEdgeCount(edgeCount);
+
+    int nodesLength = static_cast<int>(matchingNodes.size());
+    for (int i = nodesLength - 1; i >= 0; i--)
+    {
+        Node* node = matchingNodes[i];
+
+        // LOOP THROUGH ALL OF NODE'S EDGES
+        for (int j = edgeCount - 1; j >= 0; j--)
+        {
+            // IF EDGE IS BIDIRECTIONALLY CONNECTED TO ANOTHER...
+            Edge* edge = node->edges[j];
+            if (edge->edgeType == Bidirectional)
             {
-                Edge* edge = node->edges[j];
-                if (edge->edgeType == Bidirectional)
+                // FIND AND REMOVE EDGE FROM OTHER THAT POINTS TO NODE
+                Node* nodeFrom = edge->nodeFrom;
+                int edgeCountCheck = nodeFrom->getEdgeCount();
+                for (int k = edgeCountCheck - 1; k >= 0; k--)
                 {
-                    // IF EDGE IS BIDIRECTIONALLY CONNECTED TO ANOTHER, REMOVE EDGE FROM OTHER THAT POINTS TO NODE
-                    Node* nodeConnection = edge->nodeConnection;
-                    nodeConnection->removeEdgeAtIndex(edge->nodeConnectionIndex);
+                    Edge* edgeFrom = nodeFrom->edges[k];
+                    if (edgeFrom->nodeFrom == node)
+                    {
+                        nodeFrom->removeEdgeAtIndex(k);
+                        break;
+                    }
                 }
             }
-
-            removeNode(node, i);
         }
+
+        removeNode(node, i);
     }
 }
 
@@ -144,7 +176,7 @@ string NodesManager::getStringOfNodeRelationships()
         for (int j = 0; j < edgesLength; j++)
         {
             Edge* otherEdge = edges[j];
-            Node* otherNode = otherEdge->nodeConnection;
+            Node* otherNode = otherEdge->nodeFrom;
             string dirString = getDirectionStringFromEdgeType(otherEdge->edgeType);
             string nodeRelationshipStr = (otherNode->label + dirString + node->label);
 
