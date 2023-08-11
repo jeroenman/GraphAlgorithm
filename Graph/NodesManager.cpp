@@ -16,8 +16,8 @@ NodesManager::NodesManager(string txtFilePath)
 
 vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
 {
-    vector<NodeRelationship*> stringEntries;
-    stringEntries.reserve(10);
+    vector<NodeRelationship*> nodesRelationships;
+    nodesRelationships.reserve(10);
 
     string s;
     ifstream in;
@@ -27,19 +27,19 @@ vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
     if (!in.is_open())
     {
         std::cerr << "Could not open Graph.txt" << std::endl;
-        return stringEntries;
+        return nodesRelationships;
     }
 
-    // CREATE A StringEntry FOR EACH LINE / RELATIONSHIP
+    // CREATE A NodeRelationship FOR EACH LINE / RELATIONSHIP
     while (!in.eof())
     {
         getline(in, s);
 
         NodeRelationship* nodesRelationship = new NodeRelationship(s.substr(0, 1), s.substr(1, 2), s.substr(3, 1));
-        stringEntries.push_back(nodesRelationship);
+        nodesRelationships.push_back(nodesRelationship);
     }
 
-    return stringEntries;
+    return nodesRelationships;
 }
 
 void NodesManager::setupNodes(vector<NodeRelationship*> nodeRelationships)
