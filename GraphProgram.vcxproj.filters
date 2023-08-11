@@ -18,18 +18,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GraphProgram.cpp">
+    <ClCompile Include="src\private\Graph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graph.cpp">
+    <ClCompile Include="src\private\GraphProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Helper.h">
+    <ClInclude Include="src\public\Graph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graph.h">
+    <ClInclude Include="src\public\Helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

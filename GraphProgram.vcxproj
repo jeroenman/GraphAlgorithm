@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GraphProgram.cpp" />
-    <ClCompile Include="src\Graph.cpp" />
+    <ClCompile Include="src\private\Graph.cpp" />
+    <ClCompile Include="src\private\GraphProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Helper.h" />
-    <ClInclude Include="src\Graph.h" />
+    <ClInclude Include="src\public\Graph.h" />
+    <ClInclude Include="src\public\Helper.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="data\Graph.txt" />
@@ -115,6 +115,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)/src/public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
