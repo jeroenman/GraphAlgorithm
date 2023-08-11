@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NodesManager.h"
+#include "Helper.h"
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -58,13 +59,21 @@ struct Node
         node->connectTo(this, EdgeType::Bidirectional);
     }
 
+    void removeEdgeAtIndex(int index)
+    {
+        Edge* edge = edges[index];
+        delete edge;
+
+        spliceVectorAtIndex(edges, index);
+    }
+
     void clean()
     {
-        for (Edge* edge : edges)
+        int edgesLength = static_cast<int>(edges.size());
+        for (int i = edgesLength - 1; i >= 0; i--)
         {
-            delete edge;
+            removeEdgeAtIndex(i);
         }
-        edges.clear();
     }
 };
 
@@ -92,10 +101,12 @@ class NodesManager
         void clean();
 
     private:
+        vector<NodeRelationship*> createNodeRelationships(string txtPath);
+        void setupNodes(vector<NodeRelationship*> nodeRelationships);
+        Node* addNode(string label = "");
+        void removeNode(Node* node, int index);
         string getStringOfNodeRelationships();
         string getDirectionStringFromEdgeType(EdgeType edgeType);
-        vector<NodeRelationship*> createNodeRelationships(string txtPath);
-        vector<Node*> createNodesFromNodeRelationships(vector<NodeRelationship*> nodeRelationships);
 
         vector<Node*> nodes;
 };

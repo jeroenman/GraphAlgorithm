@@ -5,14 +5,13 @@ NodesManager::NodesManager(string txtFilePath)
 {
     // CREATE NODES BASED ON TXT FILE
     vector<NodeRelationship*> nodeRelationships = createNodeRelationships(txtFilePath);
-    nodes = createNodesFromNodeRelationships(nodeRelationships);
+    setupNodes(nodeRelationships);
 
     // CLEANUP nodeRelationships
     for (NodeRelationship* nodeRelationship : nodeRelationships)
     {
         delete nodeRelationship;
     }
-    nodeRelationships.clear();
 }
 
 vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
@@ -43,25 +42,24 @@ vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
     return stringEntries;
 }
 
-vector<Node*> NodesManager::createNodesFromNodeRelationships(vector<NodeRelationship*> nodeRelationships)
+void NodesManager::setupNodes(vector<NodeRelationship*> nodeRelationships)
 {
-    vector<Node*> nodes;
-    std::map<std::string, Node*> madeNodesMap;
-
     nodes.reserve(26);
+
+    std::map<std::string, Node*> madeNodesMap;
 
     for (NodeRelationship* nodeRelationship : nodeRelationships)
     {
         // CREATE NEW NODES IF THEY DON'T EXIST YET
         if (!madeNodesMap[nodeRelationship->node1Label])
         {
-            Node* node = madeNodesMap[nodeRelationship->node1Label] = new Node(nodeRelationship->node1Label);
-            nodes.push_back(node);
+            Node* node = addNode(nodeRelationship->node1Label);
+            madeNodesMap[nodeRelationship->node1Label] = node;
         }
         if (!madeNodesMap[nodeRelationship->node2Label])
         {
-            Node* node = madeNodesMap[nodeRelationship->node2Label] = new Node(nodeRelationship->node2Label);
-            nodes.push_back(node);
+            Node* node = addNode(nodeRelationship->node2Label);
+            madeNodesMap[nodeRelationship->node2Label] = node;
         }
 
         // GET NODES BASED ON LABEL
@@ -74,18 +72,30 @@ vector<Node*> NodesManager::createNodesFromNodeRelationships(vector<NodeRelation
             node1->connectInOneDirectionTo(node2);
         }
         else
-            if (nodeRelationship->direction == "<-")
-            {
-                node2->connectInOneDirectionTo(node1);
-            }
-            else
-                if (nodeRelationship->direction == "<>")
-                {
-                    node1->connectInBothDirectionsTo(node2);
-                }
+        if (nodeRelationship->direction == "<-")
+        {
+            node2->connectInOneDirectionTo(node1);
+        }
+        else
+        if (nodeRelationship->direction == "<>")
+        {
+            node1->connectInBothDirectionsTo(node2);
+        }
     }
+}
 
-    return nodes;
+Node* NodesManager::addNode(string label)
+{
+    Node* node = new Node(label);
+    nodes.push_back(node);
+
+    return node;
+}
+
+void NodesManager::removeNode(Node* node, int index)
+{
+    node->clean();
+    spliceVectorAtIndex(nodes, index);
 }
 
 void NodesManager::removeNodesWithEdgeCount(int edgeCount)
@@ -106,15 +116,13 @@ void NodesManager::removeNodesWithEdgeCount(int edgeCount)
                 Edge* edge = node->edges[j];
                 if (edge->edgeType == EdgeType::Bidirectional)
                 {
-                    // IF NODE IS BIDIRECTIONAL CONNECTED TO ANOTHER, REMOVE EDGE FROM OTHER THAT POINTS TO NODE
+                    // IF EDGE IS BIDIRECTIONALLY CONNECTED TO ANOTHER, REMOVE EDGE FROM OTHER THAT POINTS TO NODE
                     Node* nodeConnection = edge->nodeConnection;
-                    spliceVectorAtIndex(nodeConnection->edges, edge->nodeConnectionIndex);
+                    nodeConnection->removeEdgeAtIndex(edge->nodeConnectionIndex);
                 }
             }
 
-            // REMOVE NODE
-            node->clean();
-            spliceVectorAtIndex(nodes, i);
+            removeNode(node, i);
         }
     }
 }
