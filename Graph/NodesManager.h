@@ -10,6 +10,20 @@
 
 using namespace std;
 
+struct NodeRelationship
+{
+    NodeRelationship(string _node1Label, string _direction, string _node2Label)
+    {
+        node1Label = _node1Label;
+        direction = _direction;
+        node2Label = _node2Label;
+    }
+
+    string node1Label;
+    string node2Label;
+    string direction;
+};
+
 enum EdgeType { Directional, Bidirectional };
 
 struct Node;
@@ -42,21 +56,10 @@ struct Node
 
     int getEdgeCount() const { return static_cast<int>(edges.size()); }
 
-    void connectTo(Node* node, EdgeType edgeType = EdgeType::Directional)
+    void receiveEdgeFrom(Node* node, EdgeType edgeType = Directional)
     {
-        Edge* edge = new Edge(this, node->getEdgeCount(), edgeType);
-        node->edges.push_back(edge);
-    }
-
-    void connectInOneDirectionTo(Node* node)
-    {
-        connectTo(node, EdgeType::Directional);
-    }
-
-    void connectInBothDirectionsTo(Node* node)
-    {
-        connectTo(node, EdgeType::Bidirectional);
-        node->connectTo(this, EdgeType::Bidirectional);
+        Edge* edge = new Edge(node, getEdgeCount(), edgeType);
+        edges.push_back(edge);
     }
 
     void removeEdgeAtIndex(int index)
@@ -75,20 +78,6 @@ struct Node
             removeEdgeAtIndex(i);
         }
     }
-};
-
-struct NodeRelationship
-{
-    NodeRelationship(string _node1Label, string _direction, string _node2Label)
-    {
-        node1Label = _node1Label;
-        direction = _direction;
-        node2Label = _node2Label;
-    }
-
-    string node1Label;
-    string node2Label;
-    string direction;
 };
 
 class NodesManager

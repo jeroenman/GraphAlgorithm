@@ -69,17 +69,18 @@ void NodesManager::setupNodes(vector<NodeRelationship*> nodeRelationships)
         // CONNECT THEM UP BASED ON DIRECTION
         if (nodeRelationship->direction == "->")
         {
-            node1->connectInOneDirectionTo(node2);
+            node2->receiveEdgeFrom(node1);
         }
         else
         if (nodeRelationship->direction == "<-")
         {
-            node2->connectInOneDirectionTo(node1);
+            node1->receiveEdgeFrom(node2);
         }
         else
         if (nodeRelationship->direction == "<>")
         {
-            node1->connectInBothDirectionsTo(node2);
+            node2->receiveEdgeFrom(node1, Bidirectional);
+            node1->receiveEdgeFrom(node2, Bidirectional);
         }
     }
 }
@@ -114,7 +115,7 @@ void NodesManager::removeNodesWithEdgeCount(int edgeCount)
             for (int j = edgeCountMatchingNode - 1; j >= 0; j--)
             {
                 Edge* edge = node->edges[j];
-                if (edge->edgeType == EdgeType::Bidirectional)
+                if (edge->edgeType == Bidirectional)
                 {
                     // IF EDGE IS BIDIRECTIONALLY CONNECTED TO ANOTHER, REMOVE EDGE FROM OTHER THAT POINTS TO NODE
                     Node* nodeConnection = edge->nodeConnection;
@@ -155,7 +156,7 @@ string NodesManager::getStringOfNodeRelationships()
 
             result += nodeRelationshipStr + "\n";
 
-            if (otherEdge->edgeType == EdgeType::Bidirectional)
+            if (otherEdge->edgeType == Bidirectional)
             {
                 // STORE WHICH BIDIRECTIONAL CONNECTIONS TO IGNORE, SINCE WE JUST ADDED ONE
                 string nodeRelationshipStrInv = (node->label + dirString + otherNode->label);
