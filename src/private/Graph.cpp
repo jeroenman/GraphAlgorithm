@@ -135,7 +135,8 @@ void Graph::removeNodesWithEdgeCount(int edgeCount)
         Node* node = matchingNodes[i];
 
         // LOOP THROUGH ALL OF NODE'S EDGES
-        for (int j = edgeCount - 1; j >= 0; j--)
+        int edgesLength = static_cast<int>(node->edges.size());
+        for (int j = edgesLength - 1; j >= 0; j--)
         {
             // IF EDGE IS BIDIRECTIONALLY CONNECTED TO ANOTHER...
             Edge* edge = node->edges[j];
