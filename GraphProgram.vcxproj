@@ -18,11 +18,22 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\GraphProgram.cpp" />
+    <ClCompile Include="src\Graph.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Helper.h" />
+    <ClInclude Include="src\Graph.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="data\Graph.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2cc976b9-a5e7-4724-849a-bcd8583c1ffa}</ProjectGuid>
-    <RootNamespace>Graph</RootNamespace>
+    <ProjectGuid>{96f958a5-0636-4181-90f9-9e39ce52ba3c}</ProjectGuid>
+    <RootNamespace>GraphProgram</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -126,14 +137,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Graph.cpp" />
-    <ClCompile Include="NodesManager.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Helper.h" />
-    <ClInclude Include="NodesManager.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

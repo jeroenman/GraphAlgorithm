@@ -1,7 +1,7 @@
-#include "NodesManager.h"
+#include "Graph.h"
 #include "Helper.h"
 
-NodesManager::NodesManager(string txtFilePath)
+Graph::Graph(string txtFilePath)
 {
     // CREATE NODES BASED ON TXT FILE
     vector<NodeRelationship*> nodeRelationships = createNodeRelationships(txtFilePath);
@@ -14,7 +14,7 @@ NodesManager::NodesManager(string txtFilePath)
     }
 }
 
-vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
+vector<NodeRelationship*> Graph::createNodeRelationships(string txtPath)
 {
     vector<NodeRelationship*> nodesRelationships;
     nodesRelationships.reserve(10);
@@ -22,7 +22,7 @@ vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
     string s;
     ifstream in;
 
-    in.open("Graph.txt");
+    in.open(txtPath);
 
     if (!in.is_open())
     {
@@ -42,7 +42,7 @@ vector<NodeRelationship*> NodesManager::createNodeRelationships(string txtPath)
     return nodesRelationships;
 }
 
-void NodesManager::setupNodes(vector<NodeRelationship*> nodeRelationships)
+void Graph::setupNodes(vector<NodeRelationship*> nodeRelationships)
 {
     nodes.reserve(26);
 
@@ -84,14 +84,14 @@ void NodesManager::setupNodes(vector<NodeRelationship*> nodeRelationships)
     }
 }
 
-void NodesManager::connectBidirectionalEdgeToNodes(Node* node1, Node* node2)
+void Graph::connectBidirectionalEdgeToNodes(Node* node1, Node* node2)
 {
     // THESE ALWAYS HAVE TO GO TOGETHER FOR BIDIRECTIONAL
     node1->addEdgeFrom(node2, Bidirectional);
     node2->addEdgeFrom(node1, Bidirectional);
 }
 
-Node* NodesManager::addNode(string label)
+Node* Graph::addNode(string label)
 {
     Node* node = new Node(label);
     nodes.push_back(node);
@@ -99,13 +99,13 @@ Node* NodesManager::addNode(string label)
     return node;
 }
 
-void NodesManager::removeNode(Node* node, int index)
+void Graph::removeNode(Node* node, int index)
 {
     node->clean();
     spliceVectorAtIndex(nodes, index);
 }
 
-vector <Node*> NodesManager::getNodesWithEdgeCount(int edgeCount)
+vector <Node*> Graph::getNodesWithEdgeCount(int edgeCount)
 {
     vector <Node*> matchingNodes;
 
@@ -125,7 +125,7 @@ vector <Node*> NodesManager::getNodesWithEdgeCount(int edgeCount)
     return matchingNodes;
 }
 
-void NodesManager::removeNodesWithEdgeCount(int edgeCount)
+void Graph::removeNodesWithEdgeCount(int edgeCount)
 {
     vector <Node*> matchingNodes = getNodesWithEdgeCount(edgeCount);
 
@@ -160,7 +160,7 @@ void NodesManager::removeNodesWithEdgeCount(int edgeCount)
     }
 }
 
-string NodesManager::getStringOfNodeRelationships()
+string Graph::getStringOfNodeRelationships()
 {
     string result = "";
     std::map<string, bool> nodeRelationshipsToIgnoreMap;
@@ -200,13 +200,13 @@ string NodesManager::getStringOfNodeRelationships()
     return result;
 }
 
-void NodesManager::printNodeRelationships()
+void Graph::printNodeRelationships()
 {
     string nodeRelationshipStr = getStringOfNodeRelationships();
     cout << nodeRelationshipStr;
 }
 
-string NodesManager::getDirectionStringFromEdgeType(EdgeType edgeType)
+string Graph::getDirectionStringFromEdgeType(EdgeType edgeType)
 {
     switch (edgeType)
     {
@@ -219,7 +219,7 @@ string NodesManager::getDirectionStringFromEdgeType(EdgeType edgeType)
     return "";
 }
 
-void NodesManager::clean()
+void Graph::clean()
 {
     for (Node* node : nodes)
     {

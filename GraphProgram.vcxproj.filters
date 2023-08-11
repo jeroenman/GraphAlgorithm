@@ -13,21 +13,29 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="h">
+      <UniqueIdentifier>{7a553f67-bef6-49a8-ab22-a3223641000f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Graph.cpp">
+    <ClCompile Include="src\GraphProgram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NodesManager.cpp">
+    <ClCompile Include="src\Graph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NodesManager.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="src\Helper.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Helper.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="src\Graph.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="data\Graph.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

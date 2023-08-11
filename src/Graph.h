@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NodesManager.h"
+#include "Graph.h"
 #include "Helper.h"
 #include <iostream>
 #include <fstream>
@@ -78,10 +78,10 @@ struct Node
     }
 };
 
-class NodesManager
+class Graph
 {
     public:
-        NodesManager(string txtFilePath);
+        Graph(string txtFilePath);
 
         void removeNodesWithEdgeCount(int edgeCount);
         void printNodeRelationships();
