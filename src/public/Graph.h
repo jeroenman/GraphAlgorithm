@@ -19,27 +19,46 @@ struct NodeRelationship
         node2Label = _node2Label;
     }
 
+    bool equals(NodeRelationship* nodeRelationship)
+    {
+        if (direction == nodeRelationship->direction)
+        {
+            if (node1Label == nodeRelationship->node1Label && node2Label == nodeRelationship->node2Label)
+            {
+                return true;
+            }
+
+            if (node2Label == nodeRelationship->node1Label && node1Label == nodeRelationship->node2Label)
+            {
+                return true;
+            }
+        }
+          
+        return false;
+    }
+
+    string toString()
+    {
+		return node1Label + direction + node2Label;
+	}
+
     string node1Label;
     string node2Label;
     string direction;
 };
 
-enum EdgeType { Directional, Bidirectional };
-
 struct Node;
 
 struct Edge
 {
-    Edge(Node* _nodeFrom, Node* _nodeTo, EdgeType _edgeType = Directional)
+    Edge(Node* _nodeFrom, Node* _nodeTo)
     {
         nodeFrom = _nodeFrom;
         nodeTo = _nodeTo;
-        edgeType = _edgeType;
     }
 
     Node* nodeFrom = nullptr;
     Node* nodeTo = nullptr;
-    EdgeType edgeType = Directional;
 };
 
 struct Node
@@ -47,80 +66,66 @@ struct Node
     Node(string _label)
     {
         label = _label;
-        edgesIn.reserve(3);
-        edgesOut.reserve(3);
+        edges.reserve(3);
     }
 
     string label = "";
 
-    vector<Edge*> edgesIn;
-    vector<Edge*> edgesOut;
+    vector<Edge*> edges;
 
-    int getEdgeCountIn() const { return static_cast<int>(edgesIn.size()); }
-    int getEdgeCountOut() const { return static_cast<int>(edgesOut.size()); }
-
-    void addEdgeFrom(Edge* edge)
+    vector<Edge*> getEdgesIn() const
     {
-        edgesIn.push_back(edge);
+        vector<Edge*> edgesIn;
+
+        for (Edge* edge : edges)
+        {
+            if (edge->nodeTo == this)
+            {
+                edgesIn.push_back(edge);
+            }
+        }
+
+        return edgesIn;
     }
 
-    void addEdgeTo(Edge* edge)
+    vector<Edge*> getEdgesOut() const
     {
-        edgesOut.push_back(edge);
+        vector<Edge*> edgesIn;
+
+        for (Edge* edge : edges)
+        {
+            if (edge->nodeFrom == this)
+            {
+                edgesIn.push_back(edge);
+            }
+        }
+
+        return edgesIn;
+    }
+
+    int getEdgeCount() const { return static_cast<int>(edges.size()); }
+    int getEdgeCountIn() const { return static_cast<int>(getEdgesIn().size()); }
+    int getEdgeCountOut() const { return static_cast<int>(getEdgesOut().size()); }
+
+    void addEdge(Edge* edge)
+    {
+        edges.push_back(edge);
     }
 
     void removeEdge(Edge* edge)
     {
-        if (edge->nodeFrom == this)
-        {
-            removeEdgeOut(edge);
-		}
-		else
-        if (edge->nodeTo == this)
-        {
-            removeEdgeIn(edge);
-        }
+        int i = getIndexOfElementInVector(edges, edge);
+        spliceVectorAtIndex(edges, i);
     }
 
-    void removeEdgeOut(Edge* edge)
+    void removeEdgeAtIndex(int index)
     {
-        int i = getIndexOfElementInVector(edgesOut, edge);
-        spliceVectorAtIndex(edgesOut, i);
+        spliceVectorAtIndex(edges, index);
     }
 
-    void removeEdgeIn(Edge* edge)
+    void clearEdges()
     {
-        int i = getIndexOfElementInVector(edgesIn, edge);
-        spliceVectorAtIndex(edgesIn, i);
-    }
-
-    void removeEdgeInAtIndex(int index)
-    {
-        spliceVectorAtIndex(edgesIn, index);
-    }
-
-    void removeEdgeOutAtIndex(int index)
-    {
-        spliceVectorAtIndex(edgesOut, index);
-    }
-
-    void clean()
-    {
-        //return;
-        int edgesLengthIn = static_cast<int>(edgesIn.size());
-        for (int i = edgesLengthIn - 1; i >= 0; i--)
-        {
-            delete edgesIn[i];
-        }
-
-        int edgesLengthOut = static_cast<int>(edgesOut.size());
-        for (int i = edgesLengthOut - 1; i >= 0; i--)
-        {
-            //delete edgesOut[i]; // PROBLEMS WITH BIDIRECTIONAL EDGES
-        }
-
-        edgesIn.clear();
-        edgesOut.clear();
+        edges.clear();
     }
 };
 
@@ -129,22 +134,20 @@ class Graph
     public:
         Graph(string txtFilePath);
 
-        Edge* addEdge(Node* nodeFrom, Node* nodeTo, EdgeType edgeType = Directional);
-        void removeEdge(Edge* edge);
+        Node* addNode(string label = "");
+        void removeNode(Node* node, int index);
         void removeNodesWithEdgeCount(int edgeCount);
+        Edge* addEdge(Node* nodeFrom, Node* nodeTo);
+        void removeEdge(Edge* edge);
         void printNodeRelationships();
         void clean();
 
     private:
         vector<NodeRelationship*> createNodeRelationships(string txtPath);
         void setupNodes(vector<NodeRelationship*> nodeRelationships);
-        void connectBidirectionalEdgeToNodes(Node* node1, Node* node2);
-        Node* addNode(string label = "");
-        void removeNode(Node* node, int index);
-        void removeEdgesPointingToNode(Node* node);
+        void removeEdgesFromNodeAndConnections(Node* node);
         vector <Node*> getNodesWithEdgeCount(int edgeCount);
         string getStringOfNodeRelationships();
-        string getDirectionStringFromEdgeType(EdgeType edgeType);
 
         vector<Node*> nodes;
 };

@@ -80,17 +80,10 @@ void Graph::setupNodes(vector<NodeRelationship*> nodeRelationships)
         else
         if (nodeRelationship->direction == "<>")
         {
-            connectBidirectionalEdgeToNodes(node1, node2);
+            addEdge(node1, node2);
+            addEdge(node2, node1);
         }
     }
-}
-
-void Graph::connectBidirectionalEdgeToNodes(Node* node1, Node* node2)
-{
-    // THESE ALWAYS HAVE TO GO TOGETHER FOR BIDIRECTIONAL
-    Edge* edge = new Edge(node1, node2, Bidirectional);
-    node1->addEdgeFrom(edge);
-    node2->addEdgeFrom(edge);
 }
 
 Node* Graph::addNode(string label)
@@ -101,92 +94,102 @@ Node* Graph::addNode(string label)
     return node;
 }
 
-Edge* Graph::addEdge(Node* nodeFrom, Node* nodeTo, EdgeType edgeType)
+void Graph::removeNode(Node* node, int index)
 {
-	Edge* edge = new Edge(nodeFrom, nodeTo, edgeType);
-    nodeFrom->addEdgeTo(edge);
-    nodeTo->addEdgeFrom(edge);
+    removeEdgesFromNodeAndConnections(node);
+    spliceVectorAtIndex(nodes, index);
+
+    delete node;
+}
+
+void Graph::removeNodesWithEdgeCount(int edgeCount)
+{
+    vector <Node*> matchingNodes = getNodesWithEdgeCount(edgeCount);
+    int nodesLength = static_cast<int>(matchingNodes.size());
+    for (int i = nodesLength - 1; i >= 0; i--)
+    {
+        Node* node = matchingNodes[i];
+        int indexNode = getIndexOfElementInVector(nodes, node);
+        removeNode(node, indexNode);
+    }
+}
+
+Edge* Graph::addEdge(Node* nodeFrom, Node* nodeTo)
+{
+	Edge* edge = new Edge(nodeFrom, nodeTo);
+    nodeFrom->addEdge(edge);
+    nodeTo->addEdge(edge);
 
 	return edge;
 }
 
 void Graph::removeEdge(Edge* edge)
 {
-    if (edge->edgeType == Directional)
+    // REMOVE EDGE IN NODE FROM
+    Node* nodeFrom = edge->nodeFrom;
+    int nodeFromEdgesLength = static_cast<int>(nodeFrom->edges.size());
+    for (int j = nodeFromEdgesLength - 1; j >= 0; j--)
     {
-        edge->nodeFrom->removeEdge(edge);
-        edge->nodeTo->removeEdge(edge);
-    }
-    else
-    if (edge->edgeType == Bidirectional)
-    {
-        edge->nodeFrom->removeEdgeIn(edge);
-        edge->nodeTo->removeEdgeIn(edge);
+        Edge* fromEdge = nodeFrom->edges[j];
+
+        if (fromEdge->nodeTo == edge->nodeTo)
+            nodeFrom->removeEdge(fromEdge);
     }
 
+    // REMOVE EDGE IN NODE TO
+    Node* nodeTo = edge->nodeTo;
+    int nodeToEdgesLength = static_cast<int>(nodeTo->edges.size());
+    for (int j = nodeToEdgesLength - 1; j >= 0; j--)
+    {
+        Edge* toEdge = nodeTo->edges[j];
+
+        if (toEdge->nodeFrom == edge->nodeFrom)
+            nodeTo->removeEdge(toEdge);
+    }
+
+    // ONLY NOW, DELETE IT
     delete edge;
 }
 
-
-void Graph::removeEdgesPointingToNode(Node* node)
+void Graph::removeEdgesFromNodeAndConnections(Node* node)
 {
     // LOOP THROUGH ALL OF NODE'S EDGES
-    int edgesOutLength = static_cast<int>(node->edgesOut.size());
-    for (int j = edgesOutLength - 1; j >= 0; j--)
+    int edgesLength = static_cast<int>(node->edges.size());
+    for (int i = edgesLength - 1; i >= 0; i--)
     {
-        Edge* edgeOut = node->edgesOut[j];
-        if (edgeOut->edgeType == Directional)
+        Edge* edge = node->edges[i];
+
+        // COULD SIMPLY USE THIS, BUT BELOW IS MORE EFFICIENT, SINCE WE CAN CLEAR ALL THE NODE'S EDGES AT ONCE
+        //removeEdge(edge);
+
+        // FIND OTHER NODE THAT EDGE POINTS TO
+        Node* otherNode = edge->nodeFrom;
+        if (edge->nodeTo != node)
         {
-            // LOOP THROUGH ALL OF CONNECTED NODE'S INCOMING EDGES
-            Node* connectedNode = edgeOut->nodeTo;
-            int edgeCountInLength = connectedNode->getEdgeCountIn();
-            for (int k = edgeCountInLength - 1; k >= 0; k--)
+            otherNode = edge->nodeTo;
+        }
+
+        // REMOVE EDGE FROM OTHER NODE
+        int otherEdgesLength = static_cast<int>(otherNode->edges.size());
+        for (int j = otherEdgesLength - 1; j >= 0; j--)
+        {
+            Edge* otherEdge = otherNode->edges[j];
+            if (otherEdge->nodeFrom == node || otherEdge->nodeTo == node)
             {
-                // FIND THE EDGE INCOMING FROM THE NODE
-                Edge* edgeIn = connectedNode->edgesIn[k];
-                if (edgeIn->edgeType == Directional && edgeIn->nodeFrom == node)
-                {
-                    removeEdge(edgeIn);
-                }
+                otherNode->removeEdgeAtIndex(j);
             }
         }
+
+        // ONLY NOW, DELETE IT
+        delete edge;
     }
-    int edgesInLength = static_cast<int>(node->edgesIn.size());
-    for (int j = edgesInLength - 1; j >= 0; j--)
-    {
-        Edge* edgeIn = node->edgesIn[j];
-        if (edgeIn->edgeType == Bidirectional)
-        {
-            // FIND AND REMOVE EDGE FROM OTHER THAT POINTS TO NODE
-            Node* nodeFrom = node != edgeIn->nodeFrom ? edgeIn->nodeFrom : edgeIn->nodeTo;
-            int edgeCountCheck = nodeFrom->getEdgeCountIn();
-            for (int k = edgeCountCheck - 1; k >= 0; k--)
-            {
-                Edge* edgeFrom = nodeFrom->edgesIn[k];
-                if (edgeFrom->nodeFrom == node || edgeFrom->nodeTo == node)
-                {
-                    removeEdge(edgeFrom);
-                    break;
-                }
-            }
-        }
-    }
-}
 
-void Graph::removeNode(Node* node, int index)
-{
-    removeEdgesPointingToNode(node);
-
-    node->clean();
-    spliceVectorAtIndex(nodes, index);
-
-    delete node;
+    node->clearEdges();
 }
 
 vector <Node*> Graph::getNodesWithEdgeCount(int edgeCount)
 {
     vector <Node*> matchingNodes;
-
     int nodesLength = static_cast<int>(nodes.size());
     for (int i = nodesLength - 1; i >= 0; i--)
     {
@@ -203,55 +206,63 @@ vector <Node*> Graph::getNodesWithEdgeCount(int edgeCount)
     return matchingNodes;
 }
 
-void Graph::removeNodesWithEdgeCount(int edgeCount)
-{
-    vector <Node*> matchingNodes = getNodesWithEdgeCount(edgeCount);
-
-    int nodesLength = static_cast<int>(matchingNodes.size());
-    for (int i = nodesLength - 1; i >= 0; i--) 
-    {
-        Node* node = matchingNodes[i];
-        int indexNode = getIndexOfElementInVector(nodes, node);
-        removeNode(node, indexNode);
-    }
-}
-
 string Graph::getStringOfNodeRelationships()
 {
-    string result = "";
-    std::map<string, bool> nodeRelationshipsToIgnoreMap;
+    // FIND THE MODE RELATIONSHIPS
+    vector<NodeRelationship*> nodeRelationships;
 
     int nodesLength = static_cast<int>(nodes.size());
-
     for (int i = 0; i < nodesLength; i++)
     {
         Node* node = nodes[i];
-        vector<Edge*> edges = node->edgesIn;
+        vector<Edge*> edges = node->getEdgesIn();
         int edgesLength = static_cast<int>(edges.size());
 
         for (int j = 0; j < edgesLength; j++)
         {
             Edge* otherEdge = edges[j];
-            Node* otherNode = node != otherEdge->nodeFrom ? otherEdge->nodeFrom : otherEdge->nodeTo;
-            string dirString = getDirectionStringFromEdgeType(otherEdge->edgeType);
+            Node* otherNode = (node != otherEdge->nodeFrom ? otherEdge->nodeFrom : otherEdge->nodeTo);
+            string dirString = "->";
             string nodeRelationshipStr = (otherNode->label + dirString + node->label);
 
-            if (nodeRelationshipsToIgnoreMap[nodeRelationshipStr])
+            NodeRelationship* nodeRelationship = new NodeRelationship(otherNode->label, dirString, node->label);
+
+            // LOOK IF RELATIONSHIP ALREADY EXISTS
+            bool foundMatch = false;
+            int nodeRelationshipsLength = static_cast<int>(nodeRelationships.size());
+            for (int k = 0; k < nodeRelationshipsLength; k++)
             {
-                // ALREADY ADDED 
+                NodeRelationship* nodeRelationshipOther = nodeRelationships[k];
+                if (nodeRelationshipOther->equals(nodeRelationship))
+                {
+                    // IF IT DOES, MARK IT BIDIRECTIONAL
+                    nodeRelationshipOther->direction = "<>";
+                    foundMatch = true;
+					break;
+				}
+            }
+
+            if (foundMatch)
+            {
+                delete nodeRelationship;
                 continue;
             }
 
-            result += nodeRelationshipStr + "\n";
-
-            if (otherEdge->edgeType == Bidirectional)
-            {
-                // STORE WHICH BIDIRECTIONAL CONNECTIONS TO IGNORE, SINCE WE JUST ADDED ONE
-                string nodeRelationshipStrInv = (node->label + dirString + otherNode->label);
-                nodeRelationshipsToIgnoreMap[nodeRelationshipStrInv] = true;
-            }
+            nodeRelationships.push_back(nodeRelationship);
         }
     }
+
+    // BUILD RESULT STRING WITH MODE RELATIONSHIPS
+    string result = "";
+
+    int nodeRelationshipsLength = static_cast<int>(nodeRelationships.size());
+    for (int i = 0; i < nodeRelationshipsLength; i++)
+    {
+		NodeRelationship* nodeRelationship = nodeRelationships[i];
+		result += nodeRelationship->toString() + "\n";
+
+        delete nodeRelationship;
+	}
 
     return result;
 }
@@ -262,26 +273,12 @@ void Graph::printNodeRelationships()
     cout << nodeRelationshipStr;
 }
 
-string Graph::getDirectionStringFromEdgeType(EdgeType edgeType)
-{
-    switch (edgeType)
-    {
-    case Directional:
-        return "->";
-    case Bidirectional:
-        return "<>";
-    }
-
-    return "";
-}
-
 void Graph::clean()
 {
-    return;
-    for (Node* node : nodes)
+    int nodesLength = static_cast<int>(nodes.size());
+    for (int i = nodesLength - 1; i >= 0; i--)
     {
-        node->clean();
-        delete node;
+        Node* node = nodes[i];
+        removeNode(node, i);
     }
-    nodes.clear();
 }

@@ -9,16 +9,6 @@ static void spliceVectorAtIndex(std::vector<T>& vector, int index)
     vector.erase(vector.begin() + index);
 }
 
-struct compare
-{
-    int key;
-    compare(int const& i) : key(i) {}
-
-    bool operator()(int const& i) {
-        return (i == key);
-    }
-};
-
 template <typename T>
 static int getIndexOfElementInVector(std::vector<T>& vector, T& element)
 {
