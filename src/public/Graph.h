@@ -146,7 +146,7 @@ class Graph
         vector<NodeRelationship*> createNodeRelationships(string txtPath);
         void setupNodes(vector<NodeRelationship*> nodeRelationships);
         void removeEdgesFromNodeAndConnections(Node* node);
-        vector <Node*> getNodesWithEdgeCount(int edgeCount);
+        vector <Node*> getNodesWitIncomingNumberOfEdges(int edgeCount);
         string getStringOfNodeRelationships();
 
         vector<Node*> nodes;

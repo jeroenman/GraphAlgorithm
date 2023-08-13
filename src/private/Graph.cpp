@@ -67,7 +67,7 @@ void Graph::setupNodes(vector<NodeRelationship*> nodeRelationships)
         Node* node1 = madeNodesMap[nodeRelationship->node1Label];
         Node* node2 = madeNodesMap[nodeRelationship->node2Label];
 
-        // CONNECT THEM UP BASED ON DIRECTION - FOR THIS PROGRAM WE ONLY CARE ABOUT THE In EDGES FOR EACH NODE
+        // CONNECT THEM UP BASED ON DIRECTION
         if (nodeRelationship->direction == "->")
         {
             addEdge(node1, node2);
@@ -104,7 +104,7 @@ void Graph::removeNode(Node* node, int index)
 
 void Graph::removeNodesWithEdgeCount(int edgeCount)
 {
-    vector <Node*> matchingNodes = getNodesWithEdgeCount(edgeCount);
+    vector <Node*> matchingNodes = getNodesWitIncomingNumberOfEdges(edgeCount);
     int nodesLength = static_cast<int>(matchingNodes.size());
     for (int i = nodesLength - 1; i >= 0; i--)
     {
@@ -187,7 +187,7 @@ void Graph::removeEdgesFromNodeAndConnections(Node* node)
     node->clearEdges();
 }
 
-vector <Node*> Graph::getNodesWithEdgeCount(int edgeCount)
+vector <Node*> Graph::getNodesWitIncomingNumberOfEdges(int edgeCount)
 {
     vector <Node*> matchingNodes;
     int nodesLength = static_cast<int>(nodes.size());
@@ -208,7 +208,7 @@ vector <Node*> Graph::getNodesWithEdgeCount(int edgeCount)
 
 string Graph::getStringOfNodeRelationships()
 {
-    // FIND THE MODE RELATIONSHIPS
+    // FIND THE NODE RELATIONSHIPS
     vector<NodeRelationship*> nodeRelationships;
 
     int nodesLength = static_cast<int>(nodes.size());
