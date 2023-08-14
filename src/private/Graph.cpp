@@ -96,7 +96,7 @@ Node* Graph::addNode(string label)
 
 void Graph::removeNode(Node* node)
 {
-    node->clearEdges();
+    removeEdgesFromNodeAndConnections(node);
     nodes.erase(node);
 
     delete node;
@@ -117,16 +117,42 @@ void Graph::removeNodesWithEdgeCount(int edgeCount)
 Edge* Graph::addEdge(Node* nodeFrom, Node* nodeTo)
 {
 	Edge* edge = new Edge(nodeFrom, nodeTo);
-    nodeFrom->addEdgeOut(edge);
-    nodeTo->addEdgeIn(edge);
+    nodeFrom->addEdge(edge);
+    nodeTo->addEdge(edge);
 
 	return edge;
 }
 
 void Graph::removeEdge(Edge* edge)
 {
+    // REMOVE EDGE IN NODE FROM
     Node* nodeFrom = edge->nodeFrom;
-    nodeFrom->removeEdgeOut(edge); // WILL ALSO REMOVE IT FROM THE OTHER NODE
+    nodeFrom->removeEdge(edge);
+
+    // REMOVE EDGE IN NODE TO
+    Node* nodeTo = edge->nodeTo;
+    nodeTo->removeEdge(edge);
+
+    // ONLY NOW, DELETE IT
+    delete edge;
+}
+
+void Graph::removeEdgesFromNodeAndConnections(Node* node)
+{
+    // LOOP THROUGH ALL OF NODE'S EDGES
+    unordered_set<Edge*> edges = node->edges;
+
+    // LITTLE SHUFFLE TO REMOVE EDGES IN THE NEXT LOOP
+    std::vector<Edge*> toRemove;
+    for (Edge* edge : edges)
+    {
+        toRemove.push_back(edge);
+    }
+
+    for (Edge* edge : toRemove)
+    {
+        removeEdge(edge);
+    }
 }
 
 vector <Node*> Graph::getNodesWitIncomingNumberOfEdges(int edgeCount)
@@ -153,7 +179,7 @@ string Graph::getStringOfNodeRelationships()
 
     for (Node* node : nodes)
     {
-        unordered_set<Edge*> edges = node->edgesIn;
+        unordered_set<Edge*> edges = node->getEdgesIn();
         int edgesLength = static_cast<int>(edges.size());
 
         for (Edge* otherEdge : edges)

@@ -67,76 +67,60 @@ struct Node
     Node(string _label)
     {
         label = _label;
-        edgesIn.reserve(3);
-        edgesOut.reserve(3);
+        edges.reserve(3);
     }
 
     string label = "";
 
-    unordered_set<Edge*> edgesIn;
-    unordered_set<Edge*> edgesOut;
+    unordered_set<Edge*> edges;
 
-    int getEdgeCount() const { return static_cast<int>(edgesIn.size() + edgesOut.size()); }
-    int getEdgeCountIn() const { return static_cast<int>(edgesIn.size()); }
-    int getEdgeCountOut() const { return static_cast<int>(edgesOut.size()); }
-
-    void addEdgeIn(Edge* edge)
+    unordered_set<Edge*> getEdgesIn() const
     {
-        edgesIn.insert(edge);
+        unordered_set<Edge*> edgesIn;
+
+        for (Edge* edge : edges)
+        {
+            if (edge->nodeTo == this)
+            {
+                edgesIn.insert(edge);
+            }
+        }
+
+        return edgesIn;
     }
 
-    void addEdgeOut(Edge* edge)
+    unordered_set<Edge*> getEdgesOut() const
     {
-        edgesOut.insert(edge);
+        unordered_set<Edge*> edgesIn;
+
+        for (Edge* edge : edges)
+        {
+            if (edge->nodeFrom == this)
+            {
+                edgesIn.insert(edge);
+            }
+        }
+
+        return edgesIn;
     }
 
-    void removeEdgeIn(Edge* edgeIn)
+    int getEdgeCount() const { return static_cast<int>(edges.size()); }
+    int getEdgeCountIn() const { return static_cast<int>(getEdgesIn().size()); }
+    int getEdgeCountOut() const { return static_cast<int>(getEdgesOut().size()); }
+
+    void addEdge(Edge* edge)
     {
-        // REMOVE EDGE FROM OTHER NODE
-        edgeIn->nodeFrom->edgesOut.erase(edgeIn);
-
-        // REMOVE EDGE FROM SELF
-        edgesIn.erase(edgeIn);
-
-        // FINALLY, DELETE EDGE
-        delete edgeIn;
+        edges.insert(edge);
     }
 
-    void removeEdgeOut(Edge* edgeOut)
+    void removeEdge(Edge* edge)
     {
-        // REMOVE EDGE FROM OTHER NODE
-        edgeOut->nodeTo->edgesIn.erase(edgeOut);
-
-        // REMOVE EDGE FROM SELF
-        edgesOut.erase(edgeOut);
-
-        // FINALLY, DELETE EDGE
-        delete edgeOut;
+        edges.erase(edge);
     }
 
     void clearEdges()
     {
-        // REMOVE EDGES IN
-        std::vector<Edge*> toRemoveIn;
-        for (Edge* edgeIn : edgesIn)
-        {
-            toRemoveIn.push_back(edgeIn);
-        }
-        for (Edge* edgeIn : toRemoveIn)
-        {
-            removeEdgeIn(edgeIn);
-        }
-
-        // REMOVE EDGES OUT
-        std::vector<Edge*> toRemoveOut;
-        for (Edge* edgeOut : edgesOut)
-        {
-            toRemoveOut.push_back(edgeOut);
-        }
-        for (Edge* edgeOut : toRemoveOut)
-        {
-            removeEdgeOut(edgeOut);
-        }
+        edges.clear();
     }
 };
 
@@ -156,6 +140,7 @@ class Graph
     private:
         vector<NodeRelationship*> createNodeRelationships(string txtPath);
         void setupNodes(vector<NodeRelationship*> nodeRelationships);
+        void removeEdgesFromNodeAndConnections(Node* node);
         vector <Node*> getNodesWitIncomingNumberOfEdges(int edgeCount);
         string getStringOfNodeRelationships();
 
