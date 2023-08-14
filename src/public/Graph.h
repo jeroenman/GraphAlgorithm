@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 using namespace std;
 
@@ -71,32 +72,32 @@ struct Node
 
     string label = "";
 
-    vector<Edge*> edges;
+    unordered_set<Edge*> edges;
 
-    vector<Edge*> getEdgesIn() const
+    unordered_set<Edge*> getEdgesIn() const
     {
-        vector<Edge*> edgesIn;
+        unordered_set<Edge*> edgesIn;
 
         for (Edge* edge : edges)
         {
             if (edge->nodeTo == this)
             {
-                edgesIn.push_back(edge);
+                edgesIn.insert(edge);
             }
         }
 
         return edgesIn;
     }
 
-    vector<Edge*> getEdgesOut() const
+    unordered_set<Edge*> getEdgesOut() const
     {
-        vector<Edge*> edgesIn;
+        unordered_set<Edge*> edgesIn;
 
         for (Edge* edge : edges)
         {
             if (edge->nodeFrom == this)
             {
-                edgesIn.push_back(edge);
+                edgesIn.insert(edge);
             }
         }
 
@@ -109,18 +110,12 @@ struct Node
 
     void addEdge(Edge* edge)
     {
-        edges.push_back(edge);
+        edges.insert(edge);
     }
 
     void removeEdge(Edge* edge)
     {
-        int i = getIndexOfElementInVector(edges, edge);
-        spliceVectorAtIndex(edges, i);
-    }
-
-    void removeEdgeAtIndex(int index)
-    {
-        spliceVectorAtIndex(edges, index);
+        edges.erase(edge);
     }
 
     void clearEdges()
@@ -135,7 +130,7 @@ class Graph
         Graph(string txtFilePath);
 
         Node* addNode(string label = "");
-        void removeNode(Node* node, int index);
+        void removeNode(Node* node);
         void removeNodesWithEdgeCount(int edgeCount);
         Edge* addEdge(Node* nodeFrom, Node* nodeTo);
         void removeEdge(Edge* edge);
@@ -149,5 +144,5 @@ class Graph
         vector <Node*> getNodesWitIncomingNumberOfEdges(int edgeCount);
         string getStringOfNodeRelationships();
 
-        vector<Node*> nodes;
+        unordered_set<Node*> nodes;
 };

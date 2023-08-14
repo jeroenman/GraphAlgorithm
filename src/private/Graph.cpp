@@ -1,6 +1,7 @@
 #include "Graph.h"
 #include "Helper.h"
 #include <algorithm>
+#include <unordered_set>
 
 Graph::Graph(string txtFilePath)
 {
@@ -89,15 +90,15 @@ void Graph::setupNodes(vector<NodeRelationship*> nodeRelationships)
 Node* Graph::addNode(string label)
 {
     Node* node = new Node(label);
-    nodes.push_back(node);
+    nodes.insert(node);
 
     return node;
 }
 
-void Graph::removeNode(Node* node, int index)
+void Graph::removeNode(Node* node)
 {
     removeEdgesFromNodeAndConnections(node);
-    spliceVectorAtIndex(nodes, index);
+    nodes.erase(node);
 
     delete node;
 }
@@ -105,12 +106,12 @@ void Graph::removeNode(Node* node, int index)
 void Graph::removeNodesWithEdgeCount(int edgeCount)
 {
     vector <Node*> matchingNodes = getNodesWitIncomingNumberOfEdges(edgeCount);
+
     int nodesLength = static_cast<int>(matchingNodes.size());
     for (int i = nodesLength - 1; i >= 0; i--)
     {
         Node* node = matchingNodes[i];
-        int indexNode = getIndexOfElementInVector(nodes, node);
-        removeNode(node, indexNode);
+        removeNode(node);
     }
 }
 
@@ -127,25 +128,11 @@ void Graph::removeEdge(Edge* edge)
 {
     // REMOVE EDGE IN NODE FROM
     Node* nodeFrom = edge->nodeFrom;
-    int nodeFromEdgesLength = static_cast<int>(nodeFrom->edges.size());
-    for (int j = nodeFromEdgesLength - 1; j >= 0; j--)
-    {
-        Edge* fromEdge = nodeFrom->edges[j];
-
-        if (fromEdge->nodeTo == edge->nodeTo)
-            nodeFrom->removeEdge(fromEdge);
-    }
+    nodeFrom->removeEdge(edge);
 
     // REMOVE EDGE IN NODE TO
     Node* nodeTo = edge->nodeTo;
-    int nodeToEdgesLength = static_cast<int>(nodeTo->edges.size());
-    for (int j = nodeToEdgesLength - 1; j >= 0; j--)
-    {
-        Edge* toEdge = nodeTo->edges[j];
-
-        if (toEdge->nodeFrom == edge->nodeFrom)
-            nodeTo->removeEdge(toEdge);
-    }
+    nodeTo->removeEdge(edge);
 
     // ONLY NOW, DELETE IT
     delete edge;
@@ -154,47 +141,27 @@ void Graph::removeEdge(Edge* edge)
 void Graph::removeEdgesFromNodeAndConnections(Node* node)
 {
     // LOOP THROUGH ALL OF NODE'S EDGES
-    int edgesLength = static_cast<int>(node->edges.size());
-    for (int i = edgesLength - 1; i >= 0; i--)
+    unordered_set<Edge*> edges = node->edges;
+
+    // LITTLE SHUFFLE TO REMOVE EDGES IN THE NEXT LOOP
+    std::vector<Edge*> toRemove;
+    for (Edge* edge : edges)
     {
-        Edge* edge = node->edges[i];
-
-        // COULD SIMPLY USE THIS, BUT BELOW IS MORE EFFICIENT, SINCE WE CAN CLEAR ALL THE NODE'S EDGES AT ONCE
-        //removeEdge(edge);
-
-        // FIND OTHER NODE THAT EDGE POINTS TO
-        Node* otherNode = edge->nodeFrom;
-        if (edge->nodeTo != node)
-        {
-            otherNode = edge->nodeTo;
-        }
-
-        // REMOVE EDGE FROM OTHER NODE
-        int otherEdgesLength = static_cast<int>(otherNode->edges.size());
-        for (int j = otherEdgesLength - 1; j >= 0; j--)
-        {
-            Edge* otherEdge = otherNode->edges[j];
-            if (otherEdge->nodeFrom == node || otherEdge->nodeTo == node)
-            {
-                otherNode->removeEdgeAtIndex(j);
-            }
-        }
-
-        // ONLY NOW, DELETE IT
-        delete edge;
+        toRemove.push_back(edge);
     }
 
-    node->clearEdges();
+    for (Edge* edge : toRemove)
+    {
+        removeEdge(edge);
+    }
 }
 
 vector <Node*> Graph::getNodesWitIncomingNumberOfEdges(int edgeCount)
 {
     vector <Node*> matchingNodes;
-    int nodesLength = static_cast<int>(nodes.size());
-    for (int i = nodesLength - 1; i >= 0; i--)
-    {
-        Node* node = nodes[i];
 
+    for (Node* node : nodes)
+    {
         // FIND NODE THAT MATCHES EDGE COUNT TARGET
         int edgeCountNode = node->getEdgeCountIn();
         if (edgeCountNode == edgeCount)
@@ -211,16 +178,13 @@ string Graph::getStringOfNodeRelationships()
     // FIND THE NODE RELATIONSHIPS
     vector<NodeRelationship*> nodeRelationships;
 
-    int nodesLength = static_cast<int>(nodes.size());
-    for (int i = 0; i < nodesLength; i++)
+    for (Node* node : nodes)
     {
-        Node* node = nodes[i];
-        vector<Edge*> edges = node->getEdgesIn();
+        unordered_set<Edge*> edges = node->getEdgesIn();
         int edgesLength = static_cast<int>(edges.size());
 
-        for (int j = 0; j < edgesLength; j++)
+        for (Edge* otherEdge : edges)
         {
-            Edge* otherEdge = edges[j];
             Node* otherNode = (node != otherEdge->nodeFrom ? otherEdge->nodeFrom : otherEdge->nodeTo);
             string dirString = "->";
             string nodeRelationshipStr = (otherNode->label + dirString + node->label);
@@ -275,10 +239,15 @@ void Graph::printNodeRelationships()
 
 void Graph::clean()
 {
-    int nodesLength = static_cast<int>(nodes.size());
-    for (int i = nodesLength - 1; i >= 0; i--)
+    // LITTLE SHUFFLE TO REMOVE NODES IN THE NEXT LOOP
+    std::vector<Node*> toRemove;
+    for (Node* node : nodes)
     {
-        Node* node = nodes[i];
-        removeNode(node, i);
+        toRemove.push_back(node);
+    }
+
+    for (Node* node : toRemove)
+    {
+        removeNode(node);
     }
 }
