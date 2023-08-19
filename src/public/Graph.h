@@ -13,23 +13,23 @@ using namespace std;
 
 struct NodeRelationship
 {
-    NodeRelationship(string _node1Label, string _direction, string _node2Label)
+    NodeRelationship(string _nodeFromLabel, string _direction, string _nodeToLabel)
     {
-        node1Label = _node1Label;
+        nodeFromLabel = _nodeFromLabel;
         direction = _direction;
-        node2Label = _node2Label;
+        nodeToLabel = _nodeToLabel;
     }
 
     bool equals(NodeRelationship* nodeRelationship)
     {
         if (direction == nodeRelationship->direction)
         {
-            if (node1Label == nodeRelationship->node1Label && node2Label == nodeRelationship->node2Label)
+            if (nodeFromLabel == nodeRelationship->nodeFromLabel && nodeToLabel == nodeRelationship->nodeToLabel)
             {
                 return true;
             }
 
-            if (node2Label == nodeRelationship->node1Label && node1Label == nodeRelationship->node2Label)
+            if (nodeToLabel == nodeRelationship->nodeFromLabel && nodeFromLabel == nodeRelationship->nodeToLabel)
             {
                 return true;
             }
@@ -40,11 +40,11 @@ struct NodeRelationship
 
     string toString()
     {
-		return node1Label + direction + node2Label;
+		return nodeFromLabel + direction + nodeToLabel;
 	}
 
-    string node1Label;
-    string node2Label;
+    string nodeFromLabel;
+    string nodeToLabel;
     string direction;
 };
 
@@ -157,6 +157,7 @@ class Graph
         vector<NodeRelationship*> createNodeRelationships(string txtPath);
         void setupNodes(vector<NodeRelationship*> nodeRelationships);
         vector <Node*> getNodesWitIncomingNumberOfEdges(int edgeCount);
+        vector<NodeRelationship*> getNodeRelationships();
         string getStringOfNodeRelationships();
 
         unordered_set<Node*> nodes;

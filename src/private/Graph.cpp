@@ -52,36 +52,36 @@ void Graph::setupNodes(vector<NodeRelationship*> nodeRelationships)
     for (NodeRelationship* nodeRelationship : nodeRelationships)
     {
         // CREATE NEW NODES IF THEY DON'T EXIST YET
-        if (!madeNodesMap[nodeRelationship->node1Label])
+        if (!madeNodesMap[nodeRelationship->nodeFromLabel])
         {
-            Node* node = addNode(nodeRelationship->node1Label);
-            madeNodesMap[nodeRelationship->node1Label] = node;
+            Node* node = addNode(nodeRelationship->nodeFromLabel);
+            madeNodesMap[nodeRelationship->nodeFromLabel] = node;
         }
-        if (!madeNodesMap[nodeRelationship->node2Label])
+        if (!madeNodesMap[nodeRelationship->nodeToLabel])
         {
-            Node* node = addNode(nodeRelationship->node2Label);
-            madeNodesMap[nodeRelationship->node2Label] = node;
+            Node* node = addNode(nodeRelationship->nodeToLabel);
+            madeNodesMap[nodeRelationship->nodeToLabel] = node;
         }
 
         // GET NODES BASED ON LABEL
-        Node* node1 = madeNodesMap[nodeRelationship->node1Label];
-        Node* node2 = madeNodesMap[nodeRelationship->node2Label];
+        Node* nodeFrom = madeNodesMap[nodeRelationship->nodeFromLabel];
+        Node* nodeTo = madeNodesMap[nodeRelationship->nodeToLabel];
 
         // CONNECT THEM UP BASED ON DIRECTION
         if (nodeRelationship->direction == "->")
         {
-            addEdge(node1, node2);
+            addEdge(nodeFrom, nodeTo);
         }
         else
         if (nodeRelationship->direction == "<-")
         {
-            addEdge(node2, node1);
+            addEdge(nodeTo, nodeFrom);
         }
         else
         if (nodeRelationship->direction == "<>")
         {
-            addEdge(node1, node2);
-            addEdge(node2, node1);
+            addEdge(nodeFrom, nodeTo);
+            addEdge(nodeTo, nodeFrom);
         }
     }
 }
@@ -146,9 +146,8 @@ vector <Node*> Graph::getNodesWitIncomingNumberOfEdges(int edgeCount)
     return matchingNodes;
 }
 
-string Graph::getStringOfNodeRelationships()
+vector<NodeRelationship*> Graph::getNodeRelationships()
 {
-    // FIND THE NODE RELATIONSHIPS
     vector<NodeRelationship*> nodeRelationships;
 
     for (Node* node : nodes)
@@ -164,7 +163,7 @@ string Graph::getStringOfNodeRelationships()
 
             NodeRelationship* nodeRelationship = new NodeRelationship(otherNode->label, dirString, node->label);
 
-            // LOOK IF RELATIONSHIP ALREADY EXISTS
+            // LOOK IF RELATIONSHIP ALREADY EXISTS...
             bool foundMatch = false;
             int nodeRelationshipsLength = static_cast<int>(nodeRelationships.size());
             for (int k = 0; k < nodeRelationshipsLength; k++)
@@ -172,11 +171,11 @@ string Graph::getStringOfNodeRelationships()
                 NodeRelationship* nodeRelationshipOther = nodeRelationships[k];
                 if (nodeRelationshipOther->equals(nodeRelationship))
                 {
-                    // IF IT DOES, MARK IT BIDIRECTIONAL
+                    // ...IF IT DOES, MARK IT BIDIRECTIONAL
                     nodeRelationshipOther->direction = "<>";
                     foundMatch = true;
-					break;
-				}
+                    break;
+                }
             }
 
             if (foundMatch)
@@ -189,8 +188,13 @@ string Graph::getStringOfNodeRelationships()
         }
     }
 
-    // BUILD RESULT STRING WITH MODE RELATIONSHIPS
+    return nodeRelationships;
+}
+
+string Graph::getStringOfNodeRelationships()
+{
     string result = "";
+    vector<NodeRelationship*> nodeRelationships = getNodeRelationships();
 
     int nodeRelationshipsLength = static_cast<int>(nodeRelationships.size());
     for (int i = 0; i < nodeRelationshipsLength; i++)
